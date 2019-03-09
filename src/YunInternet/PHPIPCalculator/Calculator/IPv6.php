@@ -15,11 +15,6 @@ use YunInternet\PHPIPCalculator\Exception\Exception;
 
 class IPv6 implements IPCalculator
 {
-    /**
-     * @var string 128bit binary IPv6, but it is string
-     */
-    private $binaryValue;
-
     private $decimalValue;
 
     private $mask;
@@ -42,17 +37,26 @@ class IPv6 implements IPCalculator
 
     /**
      * IPv6 constructor.
-     * @param string $ipv6Address
+     * @param string|int[] $ipv6Address Human readable format or decimal
      * @param string|int $mask
      * @throws Exception
      */
     public function __construct($ipv6Address, $mask)
     {
-        // Convert IPv6 human readable format to 128bit binary value, which as string in PHP
-        $this->binaryValue = inet_pton($ipv6Address);
+        if (is_array($ipv6Address)) {
+            $this->decimalValue = $ipv6Address;
+        } else {
+            /**
+             * @var string $binaryValue 128bit binary IPv6, but it is string
+             */
+            // Convert IPv6 human readable format to 128bit binary value, which as string in PHP
+            $binaryValue = inet_pton($ipv6Address);
 
-        if ($this->binaryValue === false)
-            throw new Exception("Invalid IP", ErrorCode::INVALID_IP, null, $ipv6Address);
+            if ($binaryValue === false)
+                throw new Exception("Invalid IP", ErrorCode::INVALID_IP, null, $ipv6Address);
+
+            $this->decimalValue = self::ipv6Binary2Decimals($binaryValue);
+        }
 
         if (!is_numeric($mask))
             throw new Exception("Invalid CIDR", ErrorCode::INVALID_CIDR, null);
@@ -60,7 +64,6 @@ class IPv6 implements IPCalculator
         if (!($this->mask >= 0 && $this->mask <= 128))
             throw new Exception("Invalid CIDR", ErrorCode::INVALID_CIDR, null);
 
-        $this->decimalValue = self::ipv6Binary2Decimals($this->binaryValue);
         $this->decimalMask = self::buildDecimalMask($mask);
         $this->decimalMaskInverted = self::buildInvertedMask($this->decimalMask);
     }
@@ -96,6 +99,60 @@ class IPv6 implements IPCalculator
                 return false;
         }
         return true;
+    }
+
+    public function ipAt($position, $mask = null)
+    {
+        if (is_null($mask))
+            $mask = 128;
+        $bit2Shift = 128 - $mask;
+        // Separate $position to two uint32
+        $high32Bit = $position >> 32;
+        $low32Bit = $position & Constants::UNSIGNED_INT32_MAX;
+
+        // Calculate the real bit need to shift, it is no need to shift more than 32bit
+        $skip = intdiv($bit2Shift, 32);
+        $realBitNeed2Shift = $bit2Shift % 32;
+
+        // Do the left shift
+        $shiftedHigh32Bit = $high32Bit << $realBitNeed2Shift;
+        $shiftedLow32Bit = $low32Bit << $realBitNeed2Shift;
+
+        $carry = $shiftedLow32Bit >> 32;
+
+        // Retrieve bit to generate mask
+        $bit2Store = [
+            $shiftedHigh32Bit >> 32,
+            ($shiftedHigh32Bit & Constants::UNSIGNED_INT32_MAX) | $carry,
+            $shiftedLow32Bit & Constants::UNSIGNED_INT32_MAX,
+        ];
+
+        $decimalMask = [
+            0,
+            0,
+            0,
+            0,
+        ];
+
+        $storeAt = 1 - $skip;
+        foreach ($bit2Store as $key => $value) {
+            // Remove the overflow carry
+            if ($storeAt >= 0) {
+                $decimalMask[$storeAt] = $value;
+            }
+            ++$storeAt;
+        }
+
+        for ($i = 0; $i < 4; ++$i) {
+            $decimalMask[$i] = $decimalMask[$i] | $this->decimalMask[$i];
+        }
+
+        return self::decimalIPBitAndWithMask($this->getLastDecimalIP(), $decimalMask);
+    }
+
+    public static function calculableFormat2HumanReadable($calculableFormat)
+    {
+        return inet_ntop(self::ipv6Decimal2Binary($calculableFormat));
     }
 
     public function getFirstDecimalIP()

@@ -25,7 +25,7 @@ class IPv4 implements IPCalculator
 
     /**
      * IPCalculator constructor.
-     * @param string $ipv4Address
+     * @param string|int $ipv4Address Human readable format or uint32 integer
      * @param string|int $mask
      * @throws Exception
      */
@@ -47,7 +47,11 @@ class IPv4 implements IPCalculator
                 throw new Exception("Invalid netmask " . $mask, ErrorCode::INVALID_NETMASK, null, $ipv4Address);
         }
 
-        $this->binaryIP = self::IP2Binary($ipv4Address);
+        if (is_integer($ipv4Address))
+            $this->binaryIP = $ipv4Address;
+        else
+            $this->binaryIP = self::IP2Binary($ipv4Address);
+
         if ($this->binaryIP > Constants::UNSIGNED_INT32_MAX)
             throw new Exception("Invalid IP", ErrorCode::INVALID_IP, null, $ipv4Address);
 
@@ -90,6 +94,19 @@ class IPv4 implements IPCalculator
     public function getLastHumanReadableAddress(): string
     {
         return long2ip($this->broadcast());
+    }
+
+    public function ipAt($position, $mask = null)
+    {
+        if (is_null($mask))
+            $mask = 32;
+        $binaryMask = $this->binaryMask | (($position << (32 - $mask)) & Constants::UNSIGNED_INT32_MAX);
+        return $this->binaryBroadcast & $binaryMask;
+    }
+
+    public static function calculableFormat2HumanReadable($calculableFormat)
+    {
+        return long2ip($calculableFormat);
     }
 
     private static function CIDR2Binary($CIDR)
