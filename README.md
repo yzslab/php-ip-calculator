@@ -14,7 +14,7 @@ $calculator = $factory->create();
 ```
 or
 ```
-$factory = new CalculatorFactory("2001:470:0:76::2/96");
+$factory = new YunInternet\PHPIPCalculator\CalculatorFactory\CalculatorFactory("2001:470:0:76::2/96");
 $calculator = $factory->create();
 ```
 then
