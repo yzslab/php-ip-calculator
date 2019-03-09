@@ -1,0 +1,29 @@
+{
+  "name": "yuninternet/php-ip-calculator",
+  "description": "php ip calculator",
+  "keywords": ["ip", "calculator", "php"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Zhensheng Yuan",
+      "homepage": "https://zhensheng.im",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": ">=7.0.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^6"
+  },
+  "autoload": {
+    "psr-4": {
+      "YunInternet\\PHPIPCalculator\\": "src/YunInternet/PHPIPCalculator"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "YunInternet\\PHPIPCalculator\\Test\\": "tests/YunInternet/PHPIPCalculator/Test"
+    }
+  }
+}
