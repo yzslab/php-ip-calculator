@@ -1,7 +1,7 @@
 {
   "name": "yuninternet/php-ip-calculator",
-  "description": "php ip calculator",
-  "keywords": ["ip", "calculator", "php"],
+  "description": "IP calculator, support IPv4 & IPv6.",
+  "keywords": ["ip", "ipv4", "ipv6", "subnet", "calculator", "php"],
   "license": "MIT",
   "authors": [
     {
