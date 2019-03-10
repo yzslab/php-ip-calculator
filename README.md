@@ -27,8 +27,8 @@ $calculator->getLastHumanReadableAddress();
 $calculator->isIPInRange("192.168.111.111"); // true;
 $calculator->isIPInRange("192.169.111.111"); // false;
 
-$calculator::calculableFormat2HumanReadable($calculator->ipAt(0)); // 192.168.0.0
-$calculator::calculableFormat2HumanReadable($calculator->ipAt(255, 24)); // 192.168.255.0;
+$calculator::calculable2HumanReadable($calculator->ipAt(0)); // 192.168.0.0
+$calculator::calculable2HumanReadable($calculator->ipAt(255, 24)); // 192.168.255.0;
 $calculator::calculable2HumanReadable($calculator->ipAt(0)); // 192.168.0.0
 
 $calculator::calculable2HumanReadable($calculator->ipReverseAt(255, 24)); // 192.168.0.0
