@@ -30,6 +30,7 @@ class CalculatorTest extends TestCase
 
         $this->assertEquals("192.168.0.0", $calculator::calculable2HumanReadable($calculator->ipAt(0)));
         $this->assertEquals("192.168.1.0", $calculator::calculable2HumanReadable($calculator->ipAt(256)));
+        $this->assertEquals("192.168.255.255", $calculator::calculable2HumanReadable($calculator->ipAt(65535)));
         $this->assertEquals("192.168.0.0", $calculator::calculable2HumanReadable($calculator->ipAt(0, 24)));
         $this->assertEquals("192.168.1.0", $calculator::calculable2HumanReadable($calculator->ipAt(1, 24)));
         $this->assertEquals("192.168.255.0", $calculator::calculable2HumanReadable($calculator->ipAt(255, 24)));
