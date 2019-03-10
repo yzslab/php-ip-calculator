@@ -28,11 +28,16 @@ class CalculatorTest extends TestCase
         $this->assertTrue($calculator->isIPInRange("192.168.111.111"));
         $this->assertFalse($calculator->isIPInRange("192.169.111.111"));
 
-        $this->assertEquals("192.168.0.0", $calculator::calculableFormat2HumanReadable($calculator->ipAt(0)));
-        $this->assertEquals("192.168.1.0", $calculator::calculableFormat2HumanReadable($calculator->ipAt(256)));
-        $this->assertEquals("192.168.0.0", $calculator::calculableFormat2HumanReadable($calculator->ipAt(0, 24)));
-        $this->assertEquals("192.168.1.0", $calculator::calculableFormat2HumanReadable($calculator->ipAt(1, 24)));
-        $this->assertEquals("192.168.255.0", $calculator::calculableFormat2HumanReadable($calculator->ipAt(65535, 24)));
+        $this->assertEquals("192.168.0.0", $calculator::calculable2HumanReadable($calculator->ipAt(0)));
+        $this->assertEquals("192.168.1.0", $calculator::calculable2HumanReadable($calculator->ipAt(256)));
+        $this->assertEquals("192.168.0.0", $calculator::calculable2HumanReadable($calculator->ipAt(0, 24)));
+        $this->assertEquals("192.168.1.0", $calculator::calculable2HumanReadable($calculator->ipAt(1, 24)));
+        $this->assertEquals("192.168.255.0", $calculator::calculable2HumanReadable($calculator->ipAt(65535, 24)));
+
+        $this->assertEquals($calculator::calculable2HumanReadable($calculator->ipAt(0)), $calculator::calculable2HumanReadable($calculator->ipReverseAt(65535)));
+        $this->assertEquals($calculator::calculable2HumanReadable($calculator->ipAt(0, 24)), $calculator::calculable2HumanReadable($calculator->ipReverseAt(255, 24)));
+
+        $this->assertEquals("192.168.254.0", $calculator::calculable2HumanReadable($calculator->ipReverseAt(1, 24)));
     }
 
     public function testIPv6Calculator()
@@ -47,10 +52,28 @@ class CalculatorTest extends TestCase
         $this->assertTrue($calculator->isIPInRange("2001:470:0:76::ff0f:f0ff"));
         $this->assertFalse($calculator->isIPInRange("2001:460:0:78::ffff:ffff"));
 
-        $this->assertEquals("2001:470::", $calculator::calculableFormat2HumanReadable($calculator->ipAt(0)));
-        $this->assertEquals("2001:470::2", $calculator::calculableFormat2HumanReadable($calculator->ipAt(2)));
-        $this->assertEquals("2001:470::", $calculator::calculableFormat2HumanReadable($calculator->ipAt(0, 64)));
-        $this->assertEquals("2001:470:0:1::", $calculator::calculableFormat2HumanReadable($calculator->ipAt(1, 64)));
-        $this->assertEquals("2001:470:0:ffff::", $calculator::calculableFormat2HumanReadable($calculator->ipAt(65535, 64)));
+        $this->assertEquals("2001:470::", $calculator::calculable2HumanReadable($calculator->ipAt(0)));
+        $this->assertEquals("2001:470::2", $calculator::calculable2HumanReadable($calculator->ipAt(2)));
+        $this->assertEquals("2001:470::", $calculator::calculable2HumanReadable($calculator->ipAt(0, 64)));
+        $this->assertEquals("2001:470:0:1::", $calculator::calculable2HumanReadable($calculator->ipAt(1, 64)));
+        $this->assertEquals("2001:470:0:ffff::", $calculator::calculable2HumanReadable($calculator->ipAt(65535, 64)));
+
+        $this->assertEquals($calculator::calculable2HumanReadable($calculator->ipAt(0, 64)), $calculator::calculable2HumanReadable($calculator->ipReverseAt(65535, 64)));
+        $this->assertEquals($calculator::calculable2HumanReadable($calculator->ipReverseAt(65534, 64)), $calculator::calculable2HumanReadable($calculator->ipAt(1, 64)));
+
+        $this->assertEquals("2001:470:0:ffff:ffff:ffff:ffff:ffff", $calculator::calculable2HumanReadable($calculator->ipReverseAt(0)));
+
+        $this->assertEquals("2001:470::", $calculator::calculable2HumanReadable($calculator->ipReverseAt([
+            0x0,
+            0xFFFFFFFF,
+            0xFFFFFFFF,
+            0xFFFFFFFF,
+        ])));
+        $this->assertEquals("2001:470:0:ffff:ffff:ffff:ffff:ffff", $calculator::calculable2HumanReadable($calculator->ipAt([
+            0x0,
+            0xFFFFFFFF,
+            0xFFFFFFFF,
+            0xFFFFFFFF,
+        ])));
     }
 }

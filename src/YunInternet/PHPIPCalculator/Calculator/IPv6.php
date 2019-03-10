@@ -68,11 +68,33 @@ class IPv6 implements IPCalculator
         $this->decimalMaskInverted = self::buildInvertedMask($this->decimalMask);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getType(): int
     {
         return Constants::TYPE_IPV6;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function getFirstAddress()
+    {
+        return $this->getFirstDecimalIP();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getLastAddress()
+    {
+        return $this->getLastDecimalIP();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getFirstHumanReadableAddress(): string
     {
         if (is_null($this->firstHumanReadableIPv6)) {
@@ -81,6 +103,9 @@ class IPv6 implements IPCalculator
         return $this->firstHumanReadableIPv6;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getLastHumanReadableAddress(): string
     {
         if (is_null($this->lastHumanReadableIPv6)) {
@@ -89,6 +114,9 @@ class IPv6 implements IPCalculator
         return $this->lastHumanReadableIPv6;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function isIPInRange($ipAddress): bool
     {
         $first = $this->getFirstDecimalIP();
@@ -101,56 +129,69 @@ class IPv6 implements IPCalculator
         return true;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function ipAt($position, $mask = null)
     {
-        if (is_null($mask))
-            $mask = 128;
+        $mask = self::defaultMaskOnNull($mask);
         $bit2Shift = 128 - $mask;
-        // Separate $position to two uint32
-        $high32Bit = $position >> 32;
-        $low32Bit = $position & Constants::UNSIGNED_INT32_MAX;
 
-        // Calculate the real bit need to shift, it is no need to shift more than 32bit
-        $skip = intdiv($bit2Shift, 32);
-        $realBitNeed2Shift = $bit2Shift % 32;
+        $originMask = $this->decimalMask;
 
-        // Do the left shift
-        $shiftedHigh32Bit = $high32Bit << $realBitNeed2Shift;
-        $shiftedLow32Bit = $low32Bit << $realBitNeed2Shift;
-
-        $carry = $shiftedLow32Bit >> 32;
-
-        // Retrieve bit to generate mask
-        $bit2Store = [
-            $shiftedHigh32Bit >> 32,
-            ($shiftedHigh32Bit & Constants::UNSIGNED_INT32_MAX) | $carry,
-            $shiftedLow32Bit & Constants::UNSIGNED_INT32_MAX,
-        ];
-
-        $decimalMask = [
-            0,
-            0,
-            0,
-            0,
-        ];
-
-        $storeAt = 1 - $skip;
-        foreach ($bit2Store as $key => $value) {
-            // Remove the overflow carry
-            if ($storeAt >= 0) {
-                $decimalMask[$storeAt] = $value;
-            }
-            ++$storeAt;
+        if (is_array($position)) {
+            $addend = $position;
+        } else {
+            self::separateInt64($position, $high32Bit, $low32Bit);
+            $addend = [
+                0,
+                0,
+                $high32Bit,
+                $low32Bit,
+            ];
         }
 
-        for ($i = 0; $i < 4; ++$i) {
-            $decimalMask[$i] = $decimalMask[$i] | $this->decimalMask[$i];
-        }
+        $decimalMaskBeforeShift = self::calculableFormatBitOr($addend, $bit2Shift);
+        $decimalMask = self::calculableFormatAddition($originMask, $decimalMaskBeforeShift);
 
         return self::decimalIPBitAndWithMask($this->getLastDecimalIP(), $decimalMask);
     }
 
-    public static function calculableFormat2HumanReadable($calculableFormat)
+    public function ipReverseAt($position, $mask = null)
+    {
+        $mask = self::defaultMaskOnNull($mask);
+        $bit2Shift = 128 - $mask;
+
+
+        $fullOpenMask = [
+            Constants::UNSIGNED_INT32_MAX,
+            Constants::UNSIGNED_INT32_MAX,
+            Constants::UNSIGNED_INT32_MAX,
+            Constants::UNSIGNED_INT32_MAX,
+        ];
+
+        if (is_array($position)) {
+            $subtrahend = $position;
+        } else {
+            self::separateInt64($position, $high32Bit, $low32Bit);
+            $subtrahend = [
+                0,
+                0,
+                $high32Bit,
+                $low32Bit,
+            ];
+        }
+
+        $decimalMaskBeforeShift = self::calculableFormatBitXor($fullOpenMask, $subtrahend);
+        $decimalMask = self::calculableFormatBitOr($decimalMaskBeforeShift, $bit2Shift);
+
+        return self::decimalIPBitAndWithMask($this->getLastDecimalIP(), $decimalMask);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function calculable2HumanReadable($calculableFormat)
     {
         return inet_ntop(self::ipv6Decimal2Binary($calculableFormat));
     }
@@ -191,6 +232,68 @@ class IPv6 implements IPCalculator
             $this->lastBinaryIPv6 = self::ipv6Decimal2Binary($this->getlastDecimalIP());
         }
         return $this->lastBinaryIPv6;
+    }
+
+    private static function defaultMaskOnNull($mask = null)
+    {
+        return is_null($mask) ? 128 : $mask;
+    }
+
+    private static function separateInt64($int64, &$high32Bit, &$low32Bit)
+    {
+        // Separate $int64 to two uint32
+        $high32Bit = $int64 >> 32;
+        $low32Bit = $int64 & Constants::UNSIGNED_INT32_MAX;
+    }
+
+    private static function DWordCount($totalBit, &$DWord, &$mod)
+    {
+        $DWord = intdiv($totalBit, 32);
+        $mod = $totalBit % 32;
+    }
+
+    private static function calculableFormatAddition($addend1, $addend2)
+    {
+        $additionResult = [];
+        for ($i = 3; $i >= 0; --$i) {
+            $result = $addend1[$i] | $addend2[$i];
+            $additionResult[$i] = $result;
+        }
+
+        return $additionResult;
+    }
+
+    private static function calculableFormatBitXor($minuend, $subtrahend)
+    {
+        $subtractResult = [];
+        for ($i = 3; $i >= 0; --$i) {
+            $result = $minuend[$i] ^ $subtrahend[$i];
+            $subtractResult[$i] = $result;
+        }
+
+        return $subtractResult;
+    }
+
+    private static function calculableFormatBitOr($calculable, $bit)
+    {
+        self::DWordCount($bit, $skip, $realBitNeed2Shift);
+
+        $shiftedResult = [
+            0,
+            0,
+            0,
+            0,
+        ];
+
+        $storeAt = 3 - $skip;
+        $carry = 0;
+        for ($i = 3; $storeAt >= 0; --$i, --$storeAt) {
+            $result = $calculable[$i] << $realBitNeed2Shift;
+            $shiftedResult[$storeAt] = $result & Constants::UNSIGNED_INT32_MAX | $carry;
+            $carry = $result >> 32;
+        }
+
+        return $shiftedResult;
     }
 
     /**

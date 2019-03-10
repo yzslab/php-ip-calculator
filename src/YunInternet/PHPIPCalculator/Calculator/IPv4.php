@@ -60,11 +60,6 @@ class IPv4 implements IPCalculator
         $this->binaryBroadcast = $this->binaryNetwork | self::convertToUnsignedInteger32(~ $this->binaryMask);
     }
 
-    public function isIPInRange($ip) : bool {
-        $binaryIP = self::IP2Binary($ip);
-        $binaryNetwork = $binaryIP & $this->binaryMask;
-        return $this->binaryNetwork === $binaryNetwork;
-    }
 
     public function binaryIP()
     {
@@ -81,21 +76,58 @@ class IPv4 implements IPCalculator
         return $this->binaryBroadcast;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getType(): int
     {
         return Constants::TYPE_IPV4;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function getFirstAddress()
+    {
+        return $this->network();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getLastAddress()
+    {
+        return $this->broadcast();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getFirstHumanReadableAddress(): string
     {
-        return long2ip($this->network());
+        return self::calculable2HumanReadable($this->network());
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getLastHumanReadableAddress(): string
     {
-        return long2ip($this->broadcast());
+        return self::calculable2HumanReadable($this->broadcast());
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function isIPInRange($ip) : bool {
+        $binaryIP = self::IP2Binary($ip);
+        $binaryNetwork = $binaryIP & $this->binaryMask;
+        return $this->binaryNetwork === $binaryNetwork;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function ipAt($position, $mask = null)
     {
         if (is_null($mask))
@@ -104,7 +136,21 @@ class IPv4 implements IPCalculator
         return $this->binaryBroadcast & $binaryMask;
     }
 
-    public static function calculableFormat2HumanReadable($calculableFormat)
+    /**
+     * @inheritdoc
+     */
+    public function ipReverseAt($position, $mask = null)
+    {
+        if (is_null($mask))
+            $mask = 32;
+        $binaryMask = ((Constants::UNSIGNED_INT32_MAX ^ $position) << (32 - $mask)) & Constants::UNSIGNED_INT32_MAX;
+        return $this->binaryBroadcast & $binaryMask;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function calculable2HumanReadable($calculableFormat)
     {
         return long2ip($calculableFormat);
     }
