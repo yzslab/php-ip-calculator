@@ -62,6 +62,13 @@ interface IPCalculator
     public function ipReverseAt($position, $mask = null);
 
     /**
+     * @param int|array $position
+     * @param null|int $mask
+     * @return bool
+     */
+    public function isPositionOutOfRange($position, $mask = null) : bool;
+
+    /**
      * Convert calculable format to human readable string
      * @param mixed $calculableFormat
      * @return string Human readable format IP address

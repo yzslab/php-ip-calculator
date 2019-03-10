@@ -120,8 +120,12 @@ class IPv6 implements IPCalculator
     public function isIPInRange($ipAddress): bool
     {
         $first = $this->getFirstDecimalIP();
-        $targetIPDecimal = self::ipv6Binary2Decimals(inet_pton($ipAddress));
-        $targetIPAndWithMaskResult = self::decimalIPBitAndWithMask($targetIPDecimal, $this->decimalMask);
+
+        $binaryAsString = inet_pton($ipAddress);
+        if ($binaryAsString === false)
+            return false;
+        $targetIPDecimal = self::ipv6Binary2Decimals($binaryAsString);
+        $targetIPAndWithMaskResult = self::calculableFotmarBitAnd($targetIPDecimal, $this->decimalMask);
         for ($i = 0; $i < 4; ++$i) {
             if ($first[$i] !== $targetIPAndWithMaskResult[$i])
                 return false;
@@ -151,10 +155,10 @@ class IPv6 implements IPCalculator
             ];
         }
 
-        $decimalMaskBeforeShift = self::calculableFormatBitOr($addend, $bit2Shift);
-        $decimalMask = self::calculableFormatAddition($originMask, $decimalMaskBeforeShift);
+        $decimalMaskBeforeShift = self::calculableFormatBitLeftShift($addend, $bit2Shift);
+        $decimalMask = self::calculableFormatBitOr($originMask, $decimalMaskBeforeShift);
 
-        return self::decimalIPBitAndWithMask($this->getLastDecimalIP(), $decimalMask);
+        return self::calculableFotmarBitAnd($this->getLastDecimalIP(), $decimalMask);
     }
 
     public function ipReverseAt($position, $mask = null)
@@ -183,9 +187,41 @@ class IPv6 implements IPCalculator
         }
 
         $decimalMaskBeforeShift = self::calculableFormatBitXor($fullOpenMask, $subtrahend);
-        $decimalMask = self::calculableFormatBitOr($decimalMaskBeforeShift, $bit2Shift);
+        $decimalMask = self::calculableFormatBitLeftShift($decimalMaskBeforeShift, $bit2Shift);
 
-        return self::decimalIPBitAndWithMask($this->getLastDecimalIP(), $decimalMask);
+        return self::calculableFotmarBitAnd($this->getLastDecimalIP(), $decimalMask);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isPositionOutOfRange($position, $mask = null) : bool
+    {
+        $mask = self::defaultMaskOnNull($mask);
+        $bit2Shift = 128 - $mask;
+
+        $originMask = $this->decimalMask;
+
+        if (is_array($position)) {
+            $addend = $position;
+        } else {
+            self::separateInt64($position, $high32Bit, $low32Bit);
+            $addend = [
+                0,
+                0,
+                $high32Bit,
+                $low32Bit,
+            ];
+        }
+
+        $decimalMaskBeforeShift = self::calculableFormatBitLeftShift($addend, $bit2Shift);
+        $bitAndResult = self::calculableFotmarBitAnd($originMask, $decimalMaskBeforeShift);
+
+        foreach ($bitAndResult as $result) {
+            if ($result)
+                return true;
+        }
+        return false;
     }
 
     /**
@@ -199,7 +235,7 @@ class IPv6 implements IPCalculator
     public function getFirstDecimalIP()
     {
         if (is_null($this->firstDecimalIPv6)) {
-            $firstIPv6Decimals = self::decimalIPBitAndWithMask($this->decimalValue, $this->decimalMask);
+            $firstIPv6Decimals = self::calculableFotmarBitAnd($this->decimalValue, $this->decimalMask);
             $this->firstDecimalIPv6 = $firstIPv6Decimals;
         }
         return $this->firstDecimalIPv6;
@@ -252,7 +288,7 @@ class IPv6 implements IPCalculator
         $mod = $totalBit % 32;
     }
 
-    private static function calculableFormatAddition($addend1, $addend2)
+    private static function calculableFormatBitOr($addend1, $addend2)
     {
         $additionResult = [];
         for ($i = 3; $i >= 0; --$i) {
@@ -274,7 +310,7 @@ class IPv6 implements IPCalculator
         return $subtractResult;
     }
 
-    private static function calculableFormatBitOr($calculable, $bit)
+    private static function calculableFormatBitLeftShift($calculable, $bit)
     {
         self::DWordCount($bit, $skip, $realBitNeed2Shift);
 
@@ -301,7 +337,7 @@ class IPv6 implements IPCalculator
      * @param $mask
      * @return array
      */
-    private static function decimalIPBitAndWithMask($decimals, $mask) : array
+    private static function calculableFotmarBitAnd($decimals, $mask) : array
     {
         $result = [];
         for ($i = 0; $i < 4; ++$i) {

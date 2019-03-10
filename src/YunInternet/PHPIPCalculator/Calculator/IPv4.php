@@ -121,6 +121,8 @@ class IPv4 implements IPCalculator
      */
     public function isIPInRange($ip) : bool {
         $binaryIP = self::IP2Binary($ip);
+        if ($binaryIP === false)
+            return false;
         $binaryNetwork = $binaryIP & $this->binaryMask;
         return $this->binaryNetwork === $binaryNetwork;
     }
@@ -145,6 +147,18 @@ class IPv4 implements IPCalculator
             $mask = 32;
         $binaryMask = ((Constants::UNSIGNED_INT32_MAX ^ $position) << (32 - $mask)) & Constants::UNSIGNED_INT32_MAX;
         return $this->binaryBroadcast & $binaryMask;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isPositionOutOfRange($position, $mask = null) : bool
+    {
+        if (is_null($mask))
+            $mask = 32;
+        if ($this->binaryMask & $position << (32 - $mask))
+            return true;
+        return false;
     }
 
     /**

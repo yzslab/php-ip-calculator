@@ -32,12 +32,21 @@ class CalculatorTest extends TestCase
         $this->assertEquals("192.168.1.0", $calculator::calculable2HumanReadable($calculator->ipAt(256)));
         $this->assertEquals("192.168.0.0", $calculator::calculable2HumanReadable($calculator->ipAt(0, 24)));
         $this->assertEquals("192.168.1.0", $calculator::calculable2HumanReadable($calculator->ipAt(1, 24)));
-        $this->assertEquals("192.168.255.0", $calculator::calculable2HumanReadable($calculator->ipAt(65535, 24)));
+        $this->assertEquals("192.168.255.0", $calculator::calculable2HumanReadable($calculator->ipAt(255, 24)));
 
         $this->assertEquals($calculator::calculable2HumanReadable($calculator->ipAt(0)), $calculator::calculable2HumanReadable($calculator->ipReverseAt(65535)));
         $this->assertEquals($calculator::calculable2HumanReadable($calculator->ipAt(0, 24)), $calculator::calculable2HumanReadable($calculator->ipReverseAt(255, 24)));
 
         $this->assertEquals("192.168.254.0", $calculator::calculable2HumanReadable($calculator->ipReverseAt(1, 24)));
+
+        $this->assertFalse($calculator->isPositionOutOfRange(0));
+        $this->assertFalse($calculator->isPositionOutOfRange(65535));
+        $this->assertTrue($calculator->isPositionOutOfRange(65536));
+
+        $this->assertFalse($calculator->isPositionOutOfRange(0, 24));
+        $this->assertFalse($calculator->isPositionOutOfRange(255, 24));
+        $this->assertTrue($calculator->isPositionOutOfRange(256, 24));
+
     }
 
     public function testIPv6Calculator()
@@ -65,15 +74,33 @@ class CalculatorTest extends TestCase
 
         $this->assertEquals("2001:470::", $calculator::calculable2HumanReadable($calculator->ipReverseAt([
             0x0,
-            0xFFFFFFFF,
+            0x0000FFFF,
             0xFFFFFFFF,
             0xFFFFFFFF,
         ])));
         $this->assertEquals("2001:470:0:ffff:ffff:ffff:ffff:ffff", $calculator::calculable2HumanReadable($calculator->ipAt([
             0x0,
-            0xFFFFFFFF,
+            0x0000FFFF,
             0xFFFFFFFF,
             0xFFFFFFFF,
         ])));
+
+        $this->assertFalse($calculator->isPositionOutOfRange(0));
+        $this->assertFalse($calculator->isPositionOutOfRange([
+            0x0,
+            0x0000FFFF,
+            0xFFFFFFFF,
+            0xFFFFFFFF,
+        ]));
+        $this->assertTrue($calculator->isPositionOutOfRange([
+            0x0,
+            0x00010000,
+            0x0,
+            0x0,
+        ]));
+
+        $this->assertFalse($calculator->isPositionOutOfRange(0, 64));
+        $this->assertFalse($calculator->isPositionOutOfRange(65535, 64));
+        $this->assertTrue($calculator->isPositionOutOfRange(65536, 64));
     }
 }

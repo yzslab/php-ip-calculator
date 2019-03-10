@@ -28,12 +28,15 @@ $calculator->isIPInRange("192.168.111.111") // true;
 $calculator->isIPInRange("192.169.111.111") // false;
 
 $calculator::calculableFormat2HumanReadable($calculator->ipAt(0)); // 192.168.0.0
-$calculator::calculableFormat2HumanReadable($calculator->ipAt(65535, 24)); // 192.168.255.0;
+$calculator::calculableFormat2HumanReadable($calculator->ipAt(255, 24)); // 192.168.255.0;
 $calculator::calculable2HumanReadable($calculator->ipAt(0)); // 192.168.0.0
 
 $calculator::calculable2HumanReadable($calculator->ipReverseAt(255, 24)); // 192.168.0.0
 $calculator::calculable2HumanReadable($calculator->ipReverseAt(1, 24)); // 192.168.254.0
 
+$calculator->isPositionOutOfRange(65535); // false
+$calculator->isPositionOutOfRange(255, 24); // false
+$calculator->isPositionOutOfRange(256, 24); // true
 
 // v6
 $calculator->isIPInRange("2001:470:0:76::ff0f:f0ff") // true;
@@ -43,7 +46,7 @@ $calculator::calculable2HumanReadable($calculator->ipAt(2)); // 2001:470::2
 $calculator::calculable2HumanReadable($calculator->ipAt(65535, 64)); // 2001:470:0:ffff::
 $calculator::calculable2HumanReadable($calculator->ipAt([
     0x0,
-    0xFFFFFFFF,
+    0x0000FFFF,
     0xFFFFFFFF,
     0xFFFFFFFF,
 ])); // 2001:470:0:ffff:ffff:ffff:ffff:ffff
@@ -51,10 +54,19 @@ $calculator::calculable2HumanReadable($calculator->ipAt([
 $calculator::calculable2HumanReadable($calculator->ipReverseAt(0)); // 2001:470:0:ffff:ffff:ffff:ffff:ffff
 $calculator::calculable2HumanReadable($calculator->ipReverseAt([
     0x0,
-    0xFFFFFFFF,
+    0x0000FFFF,
     0xFFFFFFFF,
     0xFFFFFFFF,
 ])); // 2001:470::
+
+$calculator->isPositionOutOfRange([
+    0x0,
+    0x0000FFFF,
+    0xFFFFFFFF,
+    0xFFFFFFFF,
+]); // false
+$calculator->isPositionOutOfRange(65535, 64); // false
+$calculator->isPositionOutOfRange(65536, 64); // true
 ```
 
 For more details, please look at test located in tests/YunInternet/PHPIPCalculator/Test:
