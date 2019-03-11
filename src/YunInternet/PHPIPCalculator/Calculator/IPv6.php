@@ -103,6 +103,27 @@ class IPv6 implements IPCalculator
     /**
      * @inheritdoc
      */
+    public function getSubnetBefore($n = 1): IPCalculator
+    {
+        self::separateInt64($n, $high32bit, $low32Bit);
+
+        if (is_numeric($n))
+            $n = [
+                0,
+                0,
+                $high32bit,
+                $low32Bit,
+            ];
+
+        $nShifted = self::calculableFormatBitLeftShift($n, 128 - $this->networkBits);
+        $ip = self::calculableFormatSubtract($this->getFirstDecimalIP(), $nShifted);
+        return new self($ip, $this->networkBits);
+    }
+
+
+    /**
+     * @inheritdoc
+     */
     public function getFirstAddress()
     {
         return $this->getFirstDecimalIP();
@@ -360,7 +381,7 @@ class IPv6 implements IPCalculator
                 $carry = 1;
             else
                 $carry = 0;
-            $subtractResult[$i] = abs($result);
+            $subtractResult[$i] = $result & Constants::UNSIGNED_INT32_MAX;
         }
 
         return $subtractResult;

@@ -57,6 +57,10 @@ class CalculatorTest extends TestCase
         $this->assertEquals("192.168.0.0", $calculator->getSubnetAfter(0)->getFirstHumanReadableAddress());
         $this->assertEquals("192.169.0.0", $calculator->getSubnetAfter()->getFirstHumanReadableAddress());
         $this->assertEquals("192.255.0.0", $calculator->getSubnetAfter(87)->getFirstHumanReadableAddress());
+
+        $this->assertEquals("192.168.0.0", $calculator->getSubnetBefore(0)->getFirstHumanReadableAddress());
+        $this->assertEquals("192.167.0.0", $calculator->getSubnetBefore()->getFirstHumanReadableAddress());
+        $this->assertEquals("192.0.0.0", $calculator->getSubnetBefore(168)->getFirstHumanReadableAddress());
     }
 
     public function testIPv6Calculator()
@@ -123,5 +127,9 @@ class CalculatorTest extends TestCase
         $this->assertEquals("2001:470::", $calculator->getSubnetAfter(0)->getFirstHumanReadableAddress());
         $this->assertEquals("2001:470:1::", $calculator->getSubnetAfter()->getFirstHumanReadableAddress());
         $this->assertEquals("2001:470:ffff::", $calculator->getSubnetAfter(0xffff)->getFirstHumanReadableAddress());
+
+        $this->assertEquals("2001:470::", $calculator->getSubnetBefore(0)->getFirstHumanReadableAddress());
+        $this->assertEquals("2001:46f:ffff::", $calculator->getSubnetBefore()->getFirstHumanReadableAddress());
+        $this->assertEquals("2001::", $calculator->getSubnetBefore(0x4700000)->getFirstHumanReadableAddress());
     }
 }

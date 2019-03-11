@@ -41,9 +41,13 @@ $calculator->isPositionOutOfRange(256, 24); // true
 $calculator->getSubnetAfter()->getFirstHumanReadableAddress(); // 192.169.0.0
 $calculator->getSubnetAfter(87)->getFirstHumanReadableAddress(); // 192.255.0.0
 
+$calculator->getSubnetBefore()->getFirstHumanReadableAddress(); // 192.167.0.0
+$calculator->getSubnetBefore(168)->getFirstHumanReadableAddress(); // 192.0.0.0
+
 $calculator::compare($calculator::humanReadable2Calculable("127.0.0.1"), $calculator::humanReadable2Calculable("127.0.0.2")); // -1
 $calculator::compare($calculator::humanReadable2Calculable("127.0.0.1"), $calculator::humanReadable2Calculable("127.0.0.1")); // 0
 $calculator::compare($calculator::humanReadable2Calculable("127.0.0.2"), $calculator::humanReadable2Calculable("127.0.0.1")); // 1
+
 
 // v6
 $calculator->isIPInRange("2001:470:0:76::ff0f:f0ff"); // true;
@@ -77,6 +81,9 @@ $calculator->isPositionOutOfRange(65536, 64); // true
 
 $calculator->getSubnetAfter()->getFirstHumanReadableAddress(); // 2001:470:1::
 $calculator->getSubnetAfter(0xffff)->getFirstHumanReadableAddress(); // 2001:470:ffff::
+
+$calculator->getSubnetBefore()->getFirstHumanReadableAddress(); // 2001:46f:ffff::
+$calculator->getSubnetBefore(0x4700000)->getFirstHumanReadableAddress(); // 2001::
 
 $calculator::compare($calculator::humanReadable2Calculable("::1"), $calculator::humanReadable2Calculable("::2")); // -1
 $calculator::compare($calculator::humanReadable2Calculable("::1"), $calculator::humanReadable2Calculable("::1")); // 0

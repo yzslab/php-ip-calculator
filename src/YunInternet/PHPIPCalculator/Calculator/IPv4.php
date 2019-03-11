@@ -94,9 +94,17 @@ class IPv4 implements IPCalculator
      */
     public function getSubnetAfter($n = 1): IPCalculator
     {
-
         return new self($this->binaryNetwork + (($n << (32 - $this->networkBits)) & Constants::UNSIGNED_INT32_MAX), $this->networkBits);
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSubnetBefore($n = 1): IPCalculator
+    {
+        return new self($this->binaryNetwork - (($n << (32 - $this->networkBits)) & Constants::UNSIGNED_INT32_MAX), $this->networkBits);
+    }
+
 
     /**
      * @inheritdoc

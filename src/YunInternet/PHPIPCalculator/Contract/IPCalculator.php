@@ -27,6 +27,14 @@ interface IPCalculator
     public function getSubnetAfter($n = 1) : IPCalculator;
 
     /**
+     * Similar to getSubnetAfter()
+     * @param int|int[] $n
+     * @return IPCalculator
+     * @throws Exception
+     */
+    public function getSubnetBefore($n = 1) : IPCalculator;
+
+    /**
      * @return mixed Calculable format address
      */
     public function getFirstAddress();
