@@ -41,6 +41,10 @@ $calculator->isPositionOutOfRange(256, 24); // true
 $calculator->getSubnetAfter()->getFirstHumanReadableAddress(); // 192.169.0.0
 $calculator->getSubnetAfter(87)->getFirstHumanReadableAddress(); // 192.255.0.0
 
+$calculator::compare($calculator::humanReadable2Calculable("127.0.0.1"), $calculator::humanReadable2Calculable("127.0.0.2")); // -1
+$calculator::compare($calculator::humanReadable2Calculable("127.0.0.1"), $calculator::humanReadable2Calculable("127.0.0.1")); // 0
+$calculator::compare($calculator::humanReadable2Calculable("127.0.0.2"), $calculator::humanReadable2Calculable("127.0.0.1")); // 1
+
 // v6
 $calculator->isIPInRange("2001:470:0:76::ff0f:f0ff"); // true;
 $calculator->isIPInRange("2001:460:0:78::ffff:ffff"); // false;
@@ -73,6 +77,10 @@ $calculator->isPositionOutOfRange(65536, 64); // true
 
 $calculator->getSubnetAfter()->getFirstHumanReadableAddress(); // 2001:470:1::
 $calculator->getSubnetAfter(0xffff)->getFirstHumanReadableAddress(); // 2001:470:ffff::
+
+$calculator::compare($calculator::humanReadable2Calculable("::1"), $calculator::humanReadable2Calculable("::2")); // -1
+$calculator::compare($calculator::humanReadable2Calculable("::1"), $calculator::humanReadable2Calculable("::1")); // 0
+$calculator::compare($calculator::humanReadable2Calculable("::2"), $calculator::humanReadable2Calculable("::1")); // 1
 ```
 
 For more details, please look at test located in tests/YunInternet/PHPIPCalculator/Test:
