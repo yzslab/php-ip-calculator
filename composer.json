@@ -1,6 +1,6 @@
 {
   "name": "yuninternet/php-ip-calculator",
-  "description": "IP calculator, support IPv4 & IPv6.",
+  "description": "IP calculator written in PHP 7.0, IPv4 & IPv6 are supported, mainly functions for subnet allocation.",
   "keywords": ["ip", "ipv4", "ipv6", "subnet", "calculator", "php"],
   "license": "MIT",
   "authors": [
