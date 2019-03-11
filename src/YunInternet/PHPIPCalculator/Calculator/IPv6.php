@@ -148,6 +148,9 @@ class IPv6 implements IPCalculator
         $binaryAsString = inet_pton($ipAddress);
         if ($binaryAsString === false)
             return false;
+        // Prevent IPv4
+        if (strlen($binaryAsString) !== 16)
+            return false;
         $targetIPDecimal = self::ipv6Binary2Decimals($binaryAsString);
         $targetIPAndWithMaskResult = self::calculableFotmarBitAnd($targetIPDecimal, $this->decimalMask);
         for ($i = 0; $i < 4; ++$i) {
