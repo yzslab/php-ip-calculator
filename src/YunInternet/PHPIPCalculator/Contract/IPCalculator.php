@@ -65,19 +65,37 @@ interface IPCalculator
      *
      * e.g.
      * For subnet 127.0.0.0/8, ipAt(0) return 127.0.0.0, ipAt(255) return 127.0.0.255, ipAt(1, 24) return 127.0.1.0
-     * @param int|array $position PHP's int is signed int 64, use 4*uint32 array if you need larger number
+     * @param int|int[] $position PHP's int is signed int 64, use 4*uint32 array if you need larger number
      * @param null|int $mask If it is null, the default value will be used, IPv4 is 32, IPv6 is 128
      * @return mixed The calculable format IP
      */
     public function ipAt($position, $mask = null);
 
     /**
+     * Work the same as ipAt(), but return IPCalculator
+     * @param int|int[] $position PHP's int is signed int 64, use 4*uint32 array if you need larger number
+     * @param null|int $mask If it is null, the default value will be used, IPv4 is 32, IPv6 is 128
+     * @return mixed The calculable format IP
+     * @throws Exception
+     */
+    public function ipAtAsCalculator($position, $mask = null) : IPCalculator;
+
+    /**
      * Similar to ipAt(), but start from the last to the first
-     * @param int|array $position
+     * @param int|int[] $position
      * @param null|int $mask
      * @return mixed
      */
     public function ipReverseAt($position, $mask = null);
+
+    /**
+     * Work as ipReverseAt(), but return IPCalculator
+     * @param int|int[] $position
+     * @param null|int $mask
+     * @return mixed
+     * @throws Exception
+     */
+    public function ipReverseAtAsCalculator($position, $mask = null) : IPCalculator;
 
     /**
      * @param int|array $position

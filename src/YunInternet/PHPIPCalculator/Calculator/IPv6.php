@@ -209,6 +209,18 @@ class IPv6 implements IPCalculator
         return self::calculableFotmarBitAnd($this->getLastDecimalIP(), $decimalMask);
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function ipAtAsCalculator($position, $mask = null): IPCalculator
+    {
+        $mask = self::defaultMaskOnNull($mask);
+        return new self($this->ipAt($position, $mask), $mask);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function ipReverseAt($position, $mask = null)
     {
         $mask = self::defaultMaskOnNull($mask);
@@ -238,6 +250,15 @@ class IPv6 implements IPCalculator
         $decimalMask = self::calculableFormatBitLeftShift($decimalMaskBeforeShift, $bit2Shift);
 
         return self::calculableFotmarBitAnd($this->getLastDecimalIP(), $decimalMask);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function ipReverseAtAsCalculator($position, $mask = null): IPCalculator
+    {
+        $mask = self::defaultMaskOnNull($mask);
+        return new self($this->ipReverseAt($position, $mask), $mask);
     }
 
     /**

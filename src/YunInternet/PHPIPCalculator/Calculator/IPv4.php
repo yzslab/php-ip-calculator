@@ -105,7 +105,6 @@ class IPv4 implements IPCalculator
         return new self($this->binaryNetwork - (($n << (32 - $this->networkBits)) & Constants::UNSIGNED_INT32_MAX), $this->networkBits);
     }
 
-
     /**
      * @inheritdoc
      */
@@ -163,12 +162,32 @@ class IPv4 implements IPCalculator
     /**
      * @inheritdoc
      */
+    public function ipAtAsCalculator($position, $mask = null): IPCalculator
+    {
+        if (is_null($mask))
+            $mask = 32;
+        return new self($this->ipAt($position, $mask), $mask);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function ipReverseAt($position, $mask = null)
     {
         if (is_null($mask))
             $mask = 32;
         $binaryMask = ((Constants::UNSIGNED_INT32_MAX ^ $position) << (32 - $mask)) & Constants::UNSIGNED_INT32_MAX;
         return $this->binaryBroadcast & $binaryMask;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function ipReverseAtAsCalculator($position, $mask = null): IPCalculator
+    {
+        if (is_null($mask))
+            $mask = 32;
+        return new self($this->ipReverseAt($position, $mask), $mask);
     }
 
     /**

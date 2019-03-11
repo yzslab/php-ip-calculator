@@ -39,6 +39,9 @@ class CalculatorTest extends TestCase
         $this->assertEquals($calculator::calculable2HumanReadable($calculator->ipAt(0)), $calculator::calculable2HumanReadable($calculator->ipReverseAt(65535)));
         $this->assertEquals($calculator::calculable2HumanReadable($calculator->ipAt(0, 24)), $calculator::calculable2HumanReadable($calculator->ipReverseAt(255, 24)));
 
+        $this->assertEquals($calculator::calculable2HumanReadable($calculator->ipAt(0)), $calculator::calculable2HumanReadable($calculator->ipReverseAtAsCalculator(65535)->getFirstAddress()));
+        $this->assertEquals($calculator::calculable2HumanReadable($calculator->ipAt(0, 24)), $calculator::calculable2HumanReadable($calculator->ipReverseAtAsCalculator(255, 24)->getFirstAddress()));
+
         $this->assertEquals("192.168.254.0", $calculator::calculable2HumanReadable($calculator->ipReverseAt(1, 24)));
 
         $this->assertFalse($calculator->isPositionOutOfRange(0));
@@ -84,6 +87,9 @@ class CalculatorTest extends TestCase
 
         $this->assertEquals($calculator::calculable2HumanReadable($calculator->ipAt(0, 64)), $calculator::calculable2HumanReadable($calculator->ipReverseAt(65535, 64)));
         $this->assertEquals($calculator::calculable2HumanReadable($calculator->ipReverseAt(65534, 64)), $calculator::calculable2HumanReadable($calculator->ipAt(1, 64)));
+
+        $this->assertEquals($calculator::calculable2HumanReadable($calculator->ipAt(0, 64)), $calculator::calculable2HumanReadable($calculator->ipReverseAtAsCalculator(65535, 64)->getFirstAddress()));
+        $this->assertEquals($calculator::calculable2HumanReadable($calculator->ipReverseAt(65534, 64)), $calculator::calculable2HumanReadable($calculator->ipAtAsCalculator(1, 64)->getFirstAddress()));
 
         $this->assertEquals("2001:470:0:ffff:ffff:ffff:ffff:ffff", $calculator::calculable2HumanReadable($calculator->ipReverseAt(0)));
 
