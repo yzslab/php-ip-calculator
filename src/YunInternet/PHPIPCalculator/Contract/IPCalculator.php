@@ -19,6 +19,11 @@ interface IPCalculator
     public function getType() : int;
 
     /**
+     * @return int
+     */
+    public function getNetworkBits() : int;
+
+    /**
      * Return the subnet after this subnet
      * @param int|int[] $n
      * @return IPCalculator
@@ -103,6 +108,13 @@ interface IPCalculator
      * @return bool
      */
     public function isPositionOutOfRange($position, $mask = null) : bool;
+
+    /**
+     * $destination = $this->getSubnetAfter($n), this function calculate the $n
+     * @param IPCalculator $destination
+     * @return int|int[]|false Return false on two calculator have different type ,different network bits, or other errors
+     */
+    public function distanceTo(IPCalculator $destination);
 
     /**
      * Compare two calculable format ip, return -1 on $first < $second, 0 on $first equal to $second, 1 on $first > $second

@@ -42,6 +42,24 @@ class IPv6CalculableFormatTest extends TestCase
         $this->assertEquals([0xFFFFFFFE, 0xFFFFFFFE, 0xFFFFFFFE, 0xFFFFFFFD], $subtract->invoke(null, [0, 0, 0, 0], [1, 1, 1, 3]));
     }
 
+    public function testLeftShift()
+    {
+        $leftShift = $this->getMethod("calculableFormatBitLeftShift");
+        $this->assertEquals([0, 0, 0, 0], $leftShift->invoke(null, [0, 0, 0, 0], 0));
+        $this->assertEquals([0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000], $leftShift->invoke(null, [0x0000FFFF, 0x0000FFFF, 0x0000FFFF, 0x0000FFFF], 16));
+        $this->assertEquals([0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF000000], $leftShift->invoke(null, [0x0000FFFF, 0x0000FFFF, 0x0000FFFF, 0x0000FFFF], 24));
+        $this->assertEquals([0xFF0000FF, 0xFF000000, 0, 0], $leftShift->invoke(null, [0x0000FFFF, 0x0000FFFF, 0x0000FFFF, 0x0000FFFF], 88));
+    }
+
+    public function testRightShift()
+    {
+        $rightShift = $this->getMethod("calculableFormatBitRightShift");
+        $this->assertEquals([0, 0, 0, 0], $rightShift->invoke(null, [0, 0, 0, 0], 0));
+        $this->assertEquals([0x0000FFFF, 0x0000FFFF, 0x0000FFFF, 0x0000FFFF], $rightShift->invoke(null, [0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000], 16));
+        $this->assertEquals([0x000000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF], $rightShift->invoke(null, [0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000], 24));
+        $this->assertEquals([0, 0, 0, 0x00FFFF00], $rightShift->invoke(null, [0x0000FFFF, 0x0000FFFF, 0x0000FFFF, 0x0000FFFF], 88));
+    }
+
     /**
      * @param $name
      * @return \ReflectionMethod

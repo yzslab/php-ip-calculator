@@ -90,6 +90,14 @@ class IPv4 implements IPCalculator
     }
 
     /**
+     * @inheritDoc
+     */
+    public function getNetworkBits(): int
+    {
+        return $this->networkBits;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getSubnetAfter($n = 1): IPCalculator
@@ -200,6 +208,19 @@ class IPv4 implements IPCalculator
         if ($this->binaryMask & $position << (32 - $mask))
             return true;
         return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function distanceTo(IPCalculator $destination)
+    {
+        if ($this->getNetworkBits() !== $destination->getNetworkBits())
+            return false;
+        if ($this->getType() !== $destination->getType())
+            return false;
+        $bit2Shift = 32 - $this->getNetworkBits();
+        return ($destination->getFirstAddress() >> $bit2Shift) - ($this->getFirstAddress() >> $bit2Shift);
     }
 
     /**

@@ -81,6 +81,14 @@ class IPv6 implements IPCalculator
     }
 
     /**
+     * @inheritDoc
+     */
+    public function getNetworkBits(): int
+    {
+        return $this->networkBits;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getSubnetAfter($n = 1): IPCalculator
@@ -294,6 +302,21 @@ class IPv6 implements IPCalculator
     }
 
     /**
+     * @inheritDoc
+     */
+    public function distanceTo(IPCalculator $destination)
+    {
+        if ($this->getNetworkBits() !== $destination->getNetworkBits())
+            return false;
+        if ($this->getType() !== $destination->getType())
+            return false;
+        $bit2Shift = 128 - $this->getNetworkBits();
+        $firstShiftedResult = self::calculableFormatBitRightShift($this->getFirstAddress(), $bit2Shift);
+        $destinationShiftedResult = self::calculableFormatBitRightShift($destination->getFirstAddress(), $bit2Shift);
+        return self::calculableFormatSubtract($destinationShiftedResult, $firstShiftedResult);
+    }
+
+    /**
      * @inheritdoc
      */
     public static function compare($first, $second): int
@@ -447,6 +470,31 @@ class IPv6 implements IPCalculator
             $result = $calculable[$i] << $realBitNeed2Shift;
             $shiftedResult[$storeAt] = $result & Constants::UNSIGNED_INT32_MAX | $carry;
             $carry = $result >> 32;
+        }
+
+        return $shiftedResult;
+    }
+
+    private static function calculableFormatBitRightShift($calculable, $bit)
+    {
+        self::DWordCount($bit, $skip, $realBitNeed2Shift);
+
+        $shiftedResult = [
+            0,
+            0,
+            0,
+            0,
+        ];
+
+        $storeAt = $skip;
+        $carry = 0;
+        for ($i = 0; $storeAt <= 3; ++$i, ++$storeAt) {
+            $result = $calculable[$i] >> $realBitNeed2Shift;
+            $shiftedResult[$storeAt] = $result | $carry;
+
+            // Left shift 32 bit, so as to right shift to obtain carry
+            $leftShiftResult = $calculable[$i] << 32;
+            $carry = $leftShiftResult >> $realBitNeed2Shift & Constants::UNSIGNED_INT32_MAX;
         }
 
         return $shiftedResult;
