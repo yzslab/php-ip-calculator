@@ -10,43 +10,51 @@ composer require yuninternet/php-ip-calculator
 ## Usage
 ```
 $factory = new YunInternet\PHPIPCalculator\CalculatorFactory("192.168.111.222/16");
-$calculator = $factory->create();
 ```
 or
 ```
 $factory = new YunInternet\PHPIPCalculator\CalculatorFactory("2001:470:0:76::2/48");
-$calculator = $factory->create();
 ```
 then
 ```
+$calculator = $factory->create();
+
 $calculator->getType();
 $calculator->getFirstHumanReadableAddress();
 $calculator->getLastHumanReadableAddress();
 
 // v4
+// Is the target IP in this subnet?
 $calculator->isIPInRange("192.168.111.111"); // true;
 $calculator->isIPInRange("192.169.111.111"); // false;
 
+// If seperate this subnet to smaller subnet, what is the n subnet's first ip?
 $calculator::calculable2HumanReadable($calculator->ipAt(0)); // 192.168.0.0
 $calculator::calculable2HumanReadable($calculator->ipAt(65535)); // 192.168.255.255
 $calculator::calculable2HumanReadable($calculator->ipAt(255, 24)); // 192.168.255.0;
-
+// Or from then last one to the first.
 $calculator::calculable2HumanReadable($calculator->ipReverseAt(255, 24)); // 192.168.0.0
 $calculator::calculable2HumanReadable($calculator->ipReverseAt(1, 24)); // 192.168.254.0
 
+// Is the n out of range?
 $calculator->isPositionOutOfRange(65535); // false
 $calculator->isPositionOutOfRange(255, 24); // false
 $calculator->isPositionOutOfRange(256, 24); // true
 
+// Which subnet after this subnet?
 $calculator->getSubnetAfter()->getFirstHumanReadableAddress(); // 192.169.0.0
 $calculator->getSubnetAfter(87)->getFirstHumanReadableAddress(); // 192.255.0.0
-
+// Or before this subnet?
 $calculator->getSubnetBefore()->getFirstHumanReadableAddress(); // 192.167.0.0
 $calculator->getSubnetBefore(168)->getFirstHumanReadableAddress(); // 192.0.0.0
 
+// Is the IP1 after IP2?
 $calculator::compare($calculator::humanReadable2Calculable("127.0.0.1"), $calculator::humanReadable2Calculable("127.0.0.2")); // -1
 $calculator::compare($calculator::humanReadable2Calculable("127.0.0.1"), $calculator::humanReadable2Calculable("127.0.0.1")); // 0
 $calculator::compare($calculator::humanReadable2Calculable("127.0.0.2"), $calculator::humanReadable2Calculable("127.0.0.1")); // 1
+
+// After how many subnet is the destination subnet
+$calculator->distanceTo($calculator->getSubnetAfter(100); // 100
 
 
 // v6
@@ -88,6 +96,8 @@ $calculator->getSubnetBefore(0x4700000)->getFirstHumanReadableAddress(); // 2001
 $calculator::compare($calculator::humanReadable2Calculable("::1"), $calculator::humanReadable2Calculable("::2")); // -1
 $calculator::compare($calculator::humanReadable2Calculable("::1"), $calculator::humanReadable2Calculable("::1")); // 0
 $calculator::compare($calculator::humanReadable2Calculable("::2"), $calculator::humanReadable2Calculable("::1")); // 1
+
+$calculator->distanceTo($calculator->getSubnetAfter(100); // [0, 0, 0, 100]
 ```
 
 For more details, please look at test located in tests/YunInternet/PHPIPCalculator/Test:
