@@ -8,6 +8,8 @@
 namespace YunInternet\PHPIPCalculator\Contract;
 
 
+use YunInternet\PHPIPCalculator\Exception\Exception;
+
 interface IPCalculator
 {
     /**
@@ -15,6 +17,14 @@ interface IPCalculator
      * @return int
      */
     public function getType() : int;
+
+    /**
+     * Return the subnet after this subnet
+     * @param int|int[] $n
+     * @return IPCalculator
+     * @throws Exception
+     */
+    public function getSubnetAfter($n = 1) : IPCalculator;
 
     /**
      * @return mixed Calculable format address
@@ -69,9 +79,23 @@ interface IPCalculator
     public function isPositionOutOfRange($position, $mask = null) : bool;
 
     /**
+     * Compare two calculable format ip, return -1 on $first < $second, 0 on $first equal to $second, 1 on $first > $second
+     * @param mixed $first
+     * @param mixed $second
+     * @return int
+     */
+    public static function compare($first, $second) : int;
+
+    /**
      * Convert calculable format to human readable string
      * @param mixed $calculableFormat
      * @return string Human readable format IP address
      */
     public static function calculable2HumanReadable($calculableFormat);
+
+    /**
+     * @param $humanReadable
+     * @return mixed|false
+     */
+    public static function humanReadable2Calculable($humanReadable);
 }

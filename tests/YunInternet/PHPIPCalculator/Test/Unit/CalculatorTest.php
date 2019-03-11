@@ -48,6 +48,14 @@ class CalculatorTest extends TestCase
         $this->assertFalse($calculator->isPositionOutOfRange(255, 24));
         $this->assertTrue($calculator->isPositionOutOfRange(256, 24));
 
+        $this->assertEquals(1, $calculator::humanReadable2Calculable("0.0.0.1"));
+        $this->assertEquals(-1, $calculator::compare($calculator::humanReadable2Calculable("127.0.0.1"), $calculator::humanReadable2Calculable("127.0.0.2")));
+        $this->assertEquals(0, $calculator::compare($calculator::humanReadable2Calculable("127.0.0.1"), $calculator::humanReadable2Calculable("127.0.0.1")));
+        $this->assertEquals(1, $calculator::compare($calculator::humanReadable2Calculable("127.0.0.2"), $calculator::humanReadable2Calculable("127.0.0.1")));
+
+        $this->assertEquals("192.168.0.0", $calculator->getSubnetAfter(0)->getFirstHumanReadableAddress());
+        $this->assertEquals("192.169.0.0", $calculator->getSubnetAfter()->getFirstHumanReadableAddress());
+        $this->assertEquals("192.255.0.0", $calculator->getSubnetAfter(87)->getFirstHumanReadableAddress());
     }
 
     public function testIPv6Calculator()
@@ -103,5 +111,15 @@ class CalculatorTest extends TestCase
         $this->assertFalse($calculator->isPositionOutOfRange(0, 64));
         $this->assertFalse($calculator->isPositionOutOfRange(65535, 64));
         $this->assertTrue($calculator->isPositionOutOfRange(65536, 64));
+
+        $this->assertEquals([0, 0, 0, 1], $calculator::humanReadable2Calculable("::1"));
+        $this->assertEquals([0, 0, 0, 2], $calculator::humanReadable2Calculable("::2"));
+        $this->assertEquals(-1, $calculator::compare($calculator::humanReadable2Calculable("::1"), $calculator::humanReadable2Calculable("::2")));
+        $this->assertEquals(0, $calculator::compare($calculator::humanReadable2Calculable("::1"), $calculator::humanReadable2Calculable("::1")));
+        $this->assertEquals(1, $calculator::compare($calculator::humanReadable2Calculable("::2"), $calculator::humanReadable2Calculable("::1")));
+
+        $this->assertEquals("2001:470::", $calculator->getSubnetAfter(0)->getFirstHumanReadableAddress());
+        $this->assertEquals("2001:470:1::", $calculator->getSubnetAfter()->getFirstHumanReadableAddress());
+        $this->assertEquals("2001:470:ffff::", $calculator->getSubnetAfter(0xffff)->getFirstHumanReadableAddress());
     }
 }

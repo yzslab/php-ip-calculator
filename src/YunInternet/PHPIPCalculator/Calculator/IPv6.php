@@ -15,9 +15,9 @@ use YunInternet\PHPIPCalculator\Exception\Exception;
 
 class IPv6 implements IPCalculator
 {
-    private $decimalValue;
+    private $networkBits;
 
-    private $mask;
+    private $decimalValue;
 
     private $decimalMask;
 
@@ -38,10 +38,10 @@ class IPv6 implements IPCalculator
     /**
      * IPv6 constructor.
      * @param string|int[] $ipv6Address Human readable format or decimal
-     * @param string|int $mask
+     * @param string|int|int[] $networkBits
      * @throws Exception
      */
-    public function __construct($ipv6Address, $mask)
+    public function __construct($ipv6Address, $networkBits)
     {
         if (is_array($ipv6Address)) {
             $this->decimalValue = $ipv6Address;
@@ -58,13 +58,17 @@ class IPv6 implements IPCalculator
             $this->decimalValue = self::ipv6Binary2Decimals($binaryValue);
         }
 
-        if (!is_numeric($mask))
-            throw new Exception("Invalid CIDR", ErrorCode::INVALID_CIDR, null);
-        $this->mask = intval($mask);
-        if (!($this->mask >= 0 && $this->mask <= 128))
-            throw new Exception("Invalid CIDR", ErrorCode::INVALID_CIDR, null);
+        if (is_numeric($networkBits)) {
+            $networkBits = intval($networkBits);
+            if (!($networkBits >= 0 && $networkBits <= 128))
+                throw new Exception("Invalid CIDR", ErrorCode::INVALID_CIDR, null);
 
-        $this->decimalMask = self::buildDecimalMask($mask);
+            $this->decimalMask = self::buildDecimalMask($networkBits);
+            $this->networkBits = $networkBits;
+        } else {
+            throw new Exception("Invalid CIDR", ErrorCode::INVALID_CIDR, null);
+        }
+
         $this->decimalMaskInverted = self::buildInvertedMask($this->decimalMask);
     }
 
@@ -74,6 +78,26 @@ class IPv6 implements IPCalculator
     public function getType(): int
     {
         return Constants::TYPE_IPV6;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSubnetAfter($n = 1): IPCalculator
+    {
+        self::separateInt64($n, $high32bit, $low32Bit);
+
+        if (is_numeric($n))
+            $n = [
+                0,
+                0,
+                $high32bit,
+                $low32Bit,
+            ];
+
+        $nShifted = self::calculableFormatBitLeftShift($n, 128 - $this->networkBits);
+        $ip = self::calculableFormatAddition($this->getFirstDecimalIP(), $nShifted);
+        return new self($ip, $this->networkBits);
     }
 
     /**
@@ -227,9 +251,28 @@ class IPv6 implements IPCalculator
     /**
      * @inheritdoc
      */
+    public static function compare($first, $second): int
+    {
+        for ($i = 0; $i < 4; ++$i) {
+            if ($first > $second)
+                return 1;
+            else if ($first < $second)
+                return -1;
+        }
+        return 0;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function calculable2HumanReadable($calculableFormat)
     {
         return inet_ntop(self::ipv6Decimal2Binary($calculableFormat));
+    }
+
+    public static function humanReadable2Calculable($humanReadable)
+    {
+        return self::ipv6Binary2Decimals(inet_pton($humanReadable));
     }
 
     public function getFirstDecimalIP()
@@ -286,6 +329,38 @@ class IPv6 implements IPCalculator
     {
         $DWord = intdiv($totalBit, 32);
         $mod = $totalBit % 32;
+    }
+
+    private static function calculableFormatAddition($addend1, $addend2)
+    {
+        $additionResult = [];
+        $carry = 0;
+        for ($i = 3; $i >= 0; --$i) {
+            $result = $addend1[$i] + $addend2[$i] + $carry;
+            if ($result > Constants::UNSIGNED_INT32_MAX)
+                $carry = 1;
+            else
+                $carry = 0;
+            $additionResult[$i] = $result & Constants::UNSIGNED_INT32_MAX;
+        }
+
+        return $additionResult;
+    }
+
+    private static function calculableFormatSubtract($minuend, $subtrahend)
+    {
+        $subtractResult = [];
+        $carry = 0;
+        for ($i = 3; $i >= 0; --$i) {
+            $result = $minuend[$i] - $subtrahend[$i] - $carry;
+            if ($result < 0)
+                $carry = 1;
+            else
+                $carry = 0;
+            $subtractResult[$i] = abs($result);
+        }
+
+        return $subtractResult;
     }
 
     private static function calculableFormatBitOr($addend1, $addend2)

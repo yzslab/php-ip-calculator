@@ -23,6 +23,8 @@ class IPv4 implements IPCalculator
 
     private $binaryMask;
 
+    private $networkBits;
+
     /**
      * IPCalculator constructor.
      * @param string|int $ipv4Address Human readable format or uint32 integer
@@ -36,15 +38,18 @@ class IPv4 implements IPCalculator
 
         if (empty($mask)) {
             $this->binaryMask = self::CIDR2Binary(32);
+            $this->networkBits = 32;
         } else if (is_numeric($mask)) {
             $cidr = $mask;
             if (!($cidr >= 0 && $cidr <= 32))
                 throw new Exception("Invalid CIDR " . $cidr, ErrorCode::INVALID_CIDR, null, $ipv4Address);
             $this->binaryMask = self::CIDR2Binary($cidr);
+            $this->networkBits = $cidr;
         } else {
-            $this->binaryMask = self::IP2Binary($mask);
-            if ($this->binaryMask === false)
+            $this->networkBits = @Constants::IP_NETMASK_2_NETWORK_BITS[$mask];
+            if (is_null($this->networkBits))
                 throw new Exception("Invalid netmask " . $mask, ErrorCode::INVALID_NETMASK, null, $ipv4Address);
+            $this->binaryMask = self::IP2Binary($mask);
         }
 
         if (is_integer($ipv4Address))
@@ -82,6 +87,15 @@ class IPv4 implements IPCalculator
     public function getType(): int
     {
         return Constants::TYPE_IPV4;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSubnetAfter($n = 1): IPCalculator
+    {
+
+        return new self($this->binaryNetwork + (($n << (32 - $this->networkBits)) & Constants::UNSIGNED_INT32_MAX), $this->networkBits);
     }
 
     /**
@@ -164,9 +178,26 @@ class IPv4 implements IPCalculator
     /**
      * @inheritdoc
      */
+    public static function compare($first, $second): int
+    {
+        if ($first > $second)
+            return 1;
+        if ($first === $second)
+            return 0;
+        return -1;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function calculable2HumanReadable($calculableFormat)
     {
         return long2ip($calculableFormat);
+    }
+
+    public static function humanReadable2Calculable($humanReadable)
+    {
+        return ip2long($humanReadable);
     }
 
     private static function CIDR2Binary($CIDR)
