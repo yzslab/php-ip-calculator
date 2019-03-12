@@ -33,31 +33,35 @@ class IPv4 implements IPCalculator
      */
     public function __construct($ipv4Address, $mask)
     {
-        if (empty($ipv4Address))
-            throw new Exception("Empty IP", ErrorCode::INVALID_IP, null, $ipv4Address);
-
-        if (empty($mask)) {
-            $this->binaryMask = self::CIDR2Binary(32);
-            $this->networkBits = 32;
-        } else if (is_numeric($mask)) {
-            $cidr = $mask;
+        if (is_integer($mask) || ctype_digit($mask)) {
+            // Mask can be an integer (0-32)
+            $cidr = (int) $mask;
             if (!($cidr >= 0 && $cidr <= 32))
                 throw new Exception("Invalid CIDR " . $cidr, ErrorCode::INVALID_CIDR, null, $ipv4Address);
             $this->binaryMask = self::CIDR2Binary($cidr);
             $this->networkBits = $cidr;
+        } else if (empty($mask)) {
+            $this->binaryMask = self::CIDR2Binary(32);
+            $this->networkBits = 32;
         } else {
+            // Or format like 255.255.255.0
             $this->networkBits = @Constants::IP_NETMASK_2_NETWORK_BITS[$mask];
             if (is_null($this->networkBits))
                 throw new Exception("Invalid netmask " . $mask, ErrorCode::INVALID_NETMASK, null, $ipv4Address);
             $this->binaryMask = self::IP2Binary($mask);
         }
 
-        if (is_integer($ipv4Address))
-            $this->binaryIP = $ipv4Address;
-        else
+        if (is_integer($ipv4Address) || ctype_digit($ipv4Address)) {
+            // Calculable format
+            $this->binaryIP = (int) $ipv4Address;
+        } else if (empty($ipv4Address)) {
+            throw new Exception("Empty IP", ErrorCode::INVALID_IP, null, $ipv4Address);
+        } else {
+            // Human readable forma
             $this->binaryIP = self::IP2Binary($ipv4Address);
+        }
 
-        if ($this->binaryIP > Constants::UNSIGNED_INT32_MAX)
+        if ($this->binaryIP === false || $this->binaryIP > Constants::UNSIGNED_INT32_MAX || $this->binaryIP < 0)
             throw new Exception("Invalid IP", ErrorCode::INVALID_IP, null, $ipv4Address);
 
         $this->binaryNetwork = $this->binaryIP & $this->binaryMask;
