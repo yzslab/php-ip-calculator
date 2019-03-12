@@ -13,7 +13,7 @@ use YunInternet\PHPIPCalculator\Calculator\IPv6;
 
 interface Constants
 {
-    const UNSIGNED_INT32_MAX = (1 << 32) - 1;
+    const UNSIGNED_INT32_MAX = 0xFFFFFFFF;
 
     const TYPE_IPV4 = 0;
     const TYPE_IPV6 = 1;

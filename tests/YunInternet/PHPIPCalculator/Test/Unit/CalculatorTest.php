@@ -66,6 +66,9 @@ class CalculatorTest extends TestCase
         $this->assertEquals("192.0.0.0", $calculator->getSubnetBefore(168)->getFirstHumanReadableAddress());
 
         $this->assertEquals(100, $calculator->distanceTo($calculator->getSubnetAfter(100)));
+
+        $this->assertEquals(65536, $calculator->howMany());
+        $this->assertEquals(256, $calculator->howMany(24));
     }
 
     public function testIPv6Calculator()
@@ -141,5 +144,8 @@ class CalculatorTest extends TestCase
         $this->assertEquals("2001::", $calculator->getSubnetBefore(0x4700000)->getFirstHumanReadableAddress());
 
         $this->assertEquals([0, 0, 0, 100], $calculator->distanceTo($calculator->getSubnetAfter(100)));
+
+        $this->assertEquals([0, 0, 0, 1], $calculator->howMany(48));
+        $this->assertEquals([0, 0, 0, 65536], $calculator->howMany(64));
     }
 }

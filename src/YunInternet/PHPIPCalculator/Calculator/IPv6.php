@@ -190,6 +190,17 @@ class IPv6 implements IPCalculator
     }
 
     /**
+     * @inheritDoc
+     */
+    public function howMany($mask = null)
+    {
+        $mask = self::defaultMaskOnNull($mask);
+        if ($mask > 128 || $mask < 0)
+            return 0;
+        return self::calculableFormatBitRightShift(self::calculableFormatAddition($this->decimalMaskInverted, [0, 0, 0, 1]), 128 - $mask);
+    }
+
+    /**
      * @inheritdoc
      */
     public function ipAt($position, $mask = null)

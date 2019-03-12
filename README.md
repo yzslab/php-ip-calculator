@@ -56,6 +56,10 @@ $calculator::compare($calculator::humanReadable2Calculable("127.0.0.2"), $calcul
 // After how many subnet is the destination subnet
 $calculator->distanceTo($calculator->getSubnetAfter(100); // 100
 
+// How many smaller subnet in this subnet?
+$calculator->howMany(); // 65536
+$calculator->howMany(24); // 256
+
 
 // v6
 $calculator->isIPInRange("2001:470:0:76::ff0f:f0ff"); // true;
@@ -98,6 +102,9 @@ $calculator::compare($calculator::humanReadable2Calculable("::1"), $calculator::
 $calculator::compare($calculator::humanReadable2Calculable("::2"), $calculator::humanReadable2Calculable("::1")); // 1
 
 $calculator->distanceTo($calculator->getSubnetAfter(100); // [0, 0, 0, 100]
+
+$calculator->howMany(48); // [0, 0, 0, 1]
+$calculator->howMany(64); // [0, 0, 0, 65536]
 ```
 
 For more details, please look at test located in tests/YunInternet/PHPIPCalculator/Test:

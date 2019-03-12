@@ -66,6 +66,13 @@ interface IPCalculator
     public function isIPInRange($ipAddress) : bool;
 
     /**
+     * How many smaller subnet in this subnet
+     * @param null|int $mask
+     * @return int|int[]
+     */
+    public function howMany($mask = null);
+
+    /**
      * Return the $position ip(or subnet) in the subnet
      *
      * e.g.

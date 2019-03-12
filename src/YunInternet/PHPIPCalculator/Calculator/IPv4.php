@@ -157,6 +157,17 @@ class IPv4 implements IPCalculator
     }
 
     /**
+     * @inheritDoc
+     */
+    public function howMany($mask = null)
+    {
+        $mask = self::defaultMaskOnNull($mask);
+        if ($mask > 32 || $mask < 0)
+            return 0;
+        return (self::convertToUnsignedInteger32(~ $this->binaryMask) + 1) >> (32 - $mask);
+    }
+
+    /**
      * @inheritdoc
      */
     public function ipAt($position, $mask = null)
@@ -261,5 +272,10 @@ class IPv4 implements IPCalculator
     private static function convertToUnsignedInteger32($value)
     {
         return $value & Constants::UNSIGNED_INT32_MAX;
+    }
+
+    private static function defaultMaskOnNull($mask)
+    {
+        return is_null($mask) ? 32 : $mask;
     }
 }
