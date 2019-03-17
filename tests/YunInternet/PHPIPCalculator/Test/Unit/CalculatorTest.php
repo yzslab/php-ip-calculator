@@ -148,4 +148,10 @@ class CalculatorTest extends TestCase
         $this->assertEquals([0, 0, 0, 1], $calculator->howMany(48));
         $this->assertEquals([0, 0, 0, 65536], $calculator->howMany(64));
     }
+
+    public function testMac2LinkLocal()
+    {
+        $this->assertEquals("fe80::5054:00ff:fe00:0001", IPv6::mac2LinkLocal("52:54:00:00:00:01"));
+        $this->assertEquals("fe80::5054:00ff:feff:ffff", IPv6::mac2LinkLocal("52:54:00:ff:ff:ff"));
+    }
 }

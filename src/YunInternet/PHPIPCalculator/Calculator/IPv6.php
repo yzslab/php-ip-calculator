@@ -392,6 +392,22 @@ class IPv6 implements IPCalculator
         return $this->lastBinaryIPv6;
     }
 
+    /**
+     * Convert from mac address to IPv6 link-local address
+     * @param string $macAddress
+     * @return string
+     * @throws Exception
+     */
+    public static function mac2LinkLocal(string $macAddress)
+    {
+        if (strlen($macAddress) !== 17)
+            throw new Exception("Invalid mac address", ErrorCode::INVALID_MAC_ADDRESS);
+        $firstByte = hexdec($macAddress[0] . $macAddress[1]);
+        $firstByte ^= 2;
+
+        return sprintf("fe80::%x%s%s:%s%sff:fe%s%s:%s%s%s%s", $firstByte, $macAddress[3], $macAddress[4], $macAddress[6], $macAddress[7], $macAddress[9], $macAddress[10], $macAddress[12], $macAddress[13], $macAddress[15], $macAddress[16]);
+    }
+
     private static function defaultMaskOnNull($mask = null)
     {
         return is_null($mask) ? 128 : $mask;

@@ -58,6 +58,8 @@ class CalculatorFactory
 
     private static function detectAddressType($address)
     {
+        if (is_array($address))
+            return Constants::TYPE_IPV6;
         return strstr($address, ":") === false ? Constants::TYPE_IPV4 : Constants::TYPE_IPV6;
     }
 }

@@ -14,4 +14,6 @@ interface ErrorCode
     const INVALID_NETMASK = 3;
     const INVALID_IP = 5;
     const OUT_OF_RANGE = 6;
+
+    const INVALID_MAC_ADDRESS = 8;
 }
